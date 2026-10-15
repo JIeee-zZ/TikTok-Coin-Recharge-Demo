@@ -936,7 +936,7 @@ function ReviewScreen({
               accessibilityLabel="Apple logo"
             />
             <Text style={[styles.applePayWordmark, { color: colors.foreground }]}>
-              Apple{"\n"}Pay
+              Apple Pay
             </Text>
           </View>
           <View style={styles.paymentNameSpacer} />
@@ -1447,7 +1447,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   applePayMark: {
-    width: 82,
+    width: 100,
     minHeight: 36,
     flexDirection: 'row',
     alignItems: 'center',
@@ -1459,10 +1459,11 @@ const styles = StyleSheet.create({
     height: 24,
   },
   applePayWordmark: {
-    fontFamily: 'Inter_600SemiBold',
+    fontFamily: 'Inter_400Regular',
     fontSize: 14,
     lineHeight: 15,
     letterSpacing: -0.2,
+    textAlign: 'left',
   },
   paymentNameSpacer: {
     flex: 1,
