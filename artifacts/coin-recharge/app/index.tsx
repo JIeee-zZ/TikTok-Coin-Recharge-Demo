@@ -10,9 +10,10 @@ import {
   Text,
   TextInput,
   View,
+  Image,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { Feather, Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import Svg, { ClipPath, Defs, G, Path } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
@@ -928,9 +929,14 @@ function ReviewScreen({
           ]}
         >
           <View style={styles.applePayMark} accessibilityLabel="Apple Pay">
-            <Ionicons name="logo-apple" size={21} color={colors.foreground} />
+            <Image
+              source={require('../assets/images/apple-pay-symbol.png')}
+              style={styles.applePayIcon}
+              resizeMode="contain"
+              accessibilityLabel="Apple logo"
+            />
             <Text style={[styles.applePayWordmark, { color: colors.foreground }]}>
-              Apple Pay
+              Apple{"\n"}Pay
             </Text>
           </View>
           <View style={styles.paymentNameSpacer} />
@@ -1446,12 +1452,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    gap: 3,
+    gap: 6,
+  },
+  applePayIcon: {
+    width: 20,
+    height: 24,
   },
   applePayWordmark: {
     fontFamily: 'Inter_600SemiBold',
-    fontSize: 18,
-    letterSpacing: -0.6,
+    fontSize: 14,
+    lineHeight: 15,
+    letterSpacing: -0.2,
   },
   paymentNameSpacer: {
     flex: 1,
