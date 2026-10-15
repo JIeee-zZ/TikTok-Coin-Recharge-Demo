@@ -1,23 +1,28 @@
 {
   "expo": {
-    "name": "Coin Recharge Demo",
-    "slug": "coin-recharge",
+    "name": "Coin Recharge",
+    "slug": "coinrecharge",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "coin-recharge",
+    "scheme": "coinrecharge",
     "userInterfaceStyle": "light",
     "splash": {
       "backgroundColor": "#f7f6f4"
     },
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "com.coinrecharge.app"
     },
-    "android": {},
+    "android": {
+      "package": "com.coinrecharge.app"
+    },
     "web": {
       "favicon": "./assets/images/icon.png"
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router"
+    ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
