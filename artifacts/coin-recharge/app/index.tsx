@@ -934,14 +934,16 @@ function ReviewScreen({
           ]}
         >
           <View style={styles.applePayMark} accessibilityLabel="Apple Pay">
-            <Image
-              source={require('../assets/images/apple-pay-symbol.png')}
-              style={styles.applePayIcon}
-              resizeMode="contain"
-              accessibilityLabel="Apple logo"
-            />
-            <Text style={[styles.applePayWordmark, { color: colors.foreground }]}>
-              Apple Pay
+            <View style={styles.paymentIcon}>
+              <Image
+                source={require('../assets/images/apple-pay-symbol.png')}
+                style={styles.applePayIcon}
+                resizeMode="contain"
+                accessibilityLabel="Apple logo"
+              />
+            </View>
+            <Text style={[styles.paymentName, { color: colors.foreground }]}>
+              Apple{"\n"}Pay
             </Text>
           </View>
           <View style={styles.paymentNameSpacer} />
@@ -1461,18 +1463,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    gap: 6,
   },
   applePayIcon: {
     width: 20,
     height: 24,
-  },
-  applePayWordmark: {
-    fontFamily: 'Inter_400Regular',
-    fontSize: 14,
-    lineHeight: 15,
-    letterSpacing: -0.2,
-    textAlign: 'left',
   },
   paymentNameSpacer: {
     flex: 1,
