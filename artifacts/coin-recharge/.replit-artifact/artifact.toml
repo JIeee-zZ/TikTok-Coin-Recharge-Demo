@@ -1,0 +1,24 @@
+kind = "mobile"
+previewPath = "/"
+title = "Coin Recharge Demo"
+description = "A mobile demo of a TikTok coin recharge flow with username lookup, coin packages, order review, processing, and a completion state. All accounts and payments are simulated."
+version = "1.0.0"
+id = "artifacts/coin-recharge"
+router = "expo-domain"
+
+[[services]]
+name = "expo"
+ensurePreviewReachable = "/status"
+paths = [ "/" ]
+localPort = 26186
+
+[services.development]
+run = "pnpm --filter @workspace/coin-recharge run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/coin-recharge", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/coin-recharge", "run", "serve" ]
+
+[services.env]
+PORT = "26186"
+BASE_PATH = "/"
