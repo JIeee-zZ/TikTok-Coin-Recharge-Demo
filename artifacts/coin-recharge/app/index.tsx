@@ -893,7 +893,7 @@ function ReviewScreen({
             },
           ]}
         >
-          <View style={[styles.paymentIcon, { backgroundColor: colors.muted }]}>
+          <View style={styles.paymentIcon}>
             <Image
               source={require('../assets/images/credit-card-payment-icon.png')}
               style={[styles.paymentIconImage, { tintColor: colors.foreground }]}
