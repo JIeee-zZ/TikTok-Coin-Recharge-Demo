@@ -930,7 +930,7 @@ function ReviewScreen({
           <View style={styles.applePayMark} accessibilityLabel="Apple Pay">
             <Ionicons name="logo-apple" size={21} color={colors.foreground} />
             <Text style={[styles.applePayWordmark, { color: colors.foreground }]}>
-              Pay
+              Apple Pay
             </Text>
           </View>
           <View style={styles.paymentNameSpacer} />
