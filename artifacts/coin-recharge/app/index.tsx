@@ -699,7 +699,7 @@ function HomeScreen({
               },
             ]}
           >
-            <Feather name="plus" size={19} color={colors.foreground} />
+            <TikTokCoinIcon size={19} />
             <Text style={[styles.customTileLabel, { color: colors.foreground }]}>Custom</Text>
             {selectedAmount === 'custom' && (
               <View style={[styles.selectedDot, { backgroundColor: colors.primary }]}>
@@ -719,19 +719,24 @@ function HomeScreen({
                 30 to 1,000,000 coins
               </Text>
             </View>
-            <TextInput
-              testID="custom-coins-input"
-              value={customCoins}
-              onChangeText={(value) => onChangeCustomCoins(value.replace(/[^\d]/g, ''))}
-              keyboardType="number-pad"
-              placeholder="e.g. 5000"
-              placeholderTextColor={colors.mutedForeground}
+            <View
               style={[
-                styles.customCoinsInput,
-                { color: colors.foreground, borderColor: colors.border },
+                styles.customAmountInputWrap,
+                { backgroundColor: colors.background, borderColor: colors.border },
               ]}
-              accessibilityLabel="Custom coin amount"
-            />
+            >
+              <TikTokCoinIcon size={20} />
+              <TextInput
+                testID="custom-coins-input"
+                value={customCoins}
+                onChangeText={(value) => onChangeCustomCoins(value.replace(/[^\d]/g, ''))}
+                keyboardType="number-pad"
+                placeholder="e.g. 5000"
+                placeholderTextColor={colors.mutedForeground}
+                style={[styles.customCoinsInput, { color: colors.foreground }]}
+                accessibilityLabel="Custom coin amount"
+              />
+            </View>
             {customCoins.length > 0 && !isValidCustomAmount(customCoins) && (
               <Text style={[styles.errorText, styles.customError, { color: colors.destructive }]}>
                 Enter an amount between 30 and 1,000,000.
@@ -1273,11 +1278,19 @@ const styles = StyleSheet.create({
     fontSize: 10,
     marginTop: 3,
   },
-  customCoinsInput: {
-    minHeight: 44,
+  customAmountInputWrap: {
+    minHeight: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
     borderWidth: 1,
     borderRadius: 10,
-    paddingHorizontal: 12,
+    paddingHorizontal: 11,
+  },
+  customCoinsInput: {
+    flex: 1,
+    minHeight: 44,
+    paddingHorizontal: 0,
     fontFamily: 'Inter_500Medium',
     fontSize: 14,
   },
