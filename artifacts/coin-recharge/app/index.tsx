@@ -943,7 +943,7 @@ function ReviewScreen({
               />
             </View>
             <Text style={[styles.paymentName, { color: colors.foreground }]}>
-              Apple{"\n"}Pay
+              Apple Pay
             </Text>
           </View>
           <View style={styles.paymentNameSpacer} />
@@ -1458,7 +1458,7 @@ const styles = StyleSheet.create({
     height: 24,
   },
   applePayMark: {
-    width: 100,
+    width: 132,
     minHeight: 36,
     flexDirection: 'row',
     alignItems: 'center',
