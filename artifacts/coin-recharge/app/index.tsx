@@ -894,7 +894,12 @@ function ReviewScreen({
           ]}
         >
           <View style={[styles.paymentIcon, { backgroundColor: colors.muted }]}>
-            <Feather name="credit-card" size={18} color={colors.foreground} />
+            <Image
+              source={require('../assets/images/credit-card-payment-icon.png')}
+              style={[styles.paymentIconImage, { tintColor: colors.foreground }]}
+              resizeMode="contain"
+              accessibilityLabel="Credit or debit card icon"
+            />
           </View>
           <Text style={[styles.paymentName, { color: colors.foreground }]}>
             Credit or debit card
@@ -1446,6 +1451,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 10,
   },
+  paymentIconImage: {
+    width: 24,
+    height: 24,
+  },
   applePayMark: {
     width: 100,
     minHeight: 36,
@@ -1470,7 +1479,7 @@ const styles = StyleSheet.create({
   },
   paymentName: {
     fontFamily: 'Inter_500Medium',
-    fontSize: 13,
+    fontSize: 14,
     marginLeft: 10,
     flex: 1,
   },
