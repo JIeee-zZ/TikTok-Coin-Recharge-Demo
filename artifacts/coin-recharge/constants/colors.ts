@@ -57,6 +57,7 @@ const colors = {
     successSoft: '#eaf8ef',
     info: '#eaf4ff',
     infoForeground: '#386493',
+    processingCyan: '#18c6d2',
     scrim: 'rgba(18, 17, 20, 0.58)',
   },
 

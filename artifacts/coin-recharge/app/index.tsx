@@ -1,5 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+  Animated,
+  Easing,
   Keyboard,
   Platform,
   Pressable,
@@ -58,6 +60,10 @@ const COIN_PACKAGES: CoinPackage[] = [
 ];
 
 const formatCoins = (amount: number) => amount.toLocaleString('en-US');
+const formatCountdown = (remainingSeconds: number) =>
+  `${String(Math.floor(remainingSeconds / 60)).padStart(2, '0')}:${String(
+    remainingSeconds % 60,
+  ).padStart(2, '0')}`;
 const formatPrice = (amount: number) =>
   `$${amount.toLocaleString('en-US', {
     minimumFractionDigits: 2,
@@ -121,7 +127,8 @@ export default function CoinRechargeScreen() {
   const [selectedAmount, setSelectedAmount] = useState<number | 'custom'>(3500);
   const [customCoins, setCustomCoins] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('card');
-  const [countdown, setCountdown] = useState(5);
+  const [countdown, setCountdown] = useState(5 * 60);
+  const processingMotion = useRef(new Animated.Value(0)).current;
 
   const parsedCustomCoins = Number.parseInt(customCoins.replace(/,/g, ''), 10);
   const isCustomAmountValid =
@@ -146,23 +153,50 @@ export default function CoinRechargeScreen() {
   useEffect(() => {
     if (step !== 'processing') return;
 
-    setCountdown(5);
+    setCountdown(5 * 60);
     const interval = setInterval(() => {
       setCountdown((seconds) => Math.max(0, seconds - 1));
     }, 1000);
     const finishTimer = setTimeout(() => {
-      setCountdown(0);
+      setCountdown((seconds) => Math.max(0, seconds - 1));
       setStep('complete');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
         () => undefined,
       );
-    }, 5000);
+    }, 2500);
 
     return () => {
       clearInterval(interval);
       clearTimeout(finishTimer);
     };
   }, [step]);
+
+  useEffect(() => {
+    if (step !== 'processing') {
+      processingMotion.stopAnimation();
+      processingMotion.setValue(0);
+      return;
+    }
+
+    const loop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(processingMotion, {
+          toValue: 1,
+          duration: 420,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: false,
+        }),
+        Animated.timing(processingMotion, {
+          toValue: 0,
+          duration: 420,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: false,
+        }),
+      ]),
+    );
+    loop.start();
+    return () => loop.stop();
+  }, [processingMotion, step]);
 
   const searchForAccount = () => {
     Keyboard.dismiss();
@@ -207,7 +241,7 @@ export default function CoinRechargeScreen() {
   };
 
   const startDemoPayment = () => {
-    setCountdown(5);
+    setCountdown(5 * 60);
     setStep('processing');
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(
       () => undefined,
@@ -221,6 +255,30 @@ export default function CoinRechargeScreen() {
 
   const safeTop = Platform.OS === 'web' ? 67 : insets.top;
   const safeBottom = Platform.OS === 'web' ? 34 : insets.bottom;
+  const leftBallColor = processingMotion.interpolate({
+    inputRange: [0, 1],
+    outputRange: [colors.processingCyan, colors.primary],
+  });
+  const rightBallColor = processingMotion.interpolate({
+    inputRange: [0, 1],
+    outputRange: [colors.primary, colors.processingCyan],
+  });
+  const leftBallShift = processingMotion.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 8],
+  });
+  const rightBallShift = processingMotion.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -8],
+  });
+  const leftBallScale = processingMotion.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 0.88],
+  });
+  const rightBallScale = processingMotion.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.88, 1],
+  });
 
   return (
     <View
@@ -294,34 +352,47 @@ export default function CoinRechargeScreen() {
                 { backgroundColor: colors.card },
               ]}
               accessibilityRole="progressbar"
-              accessibilityLabel="Simulating payment"
+              accessibilityLabel="Simulating demo payment"
             >
               <View style={styles.loaderPair}>
-                <View style={[styles.loaderDot, { backgroundColor: colors.infoForeground }]} />
-                <View style={[styles.loaderDot, { backgroundColor: colors.primary }]} />
-              </View>
-              <Text style={[styles.dialogTitle, { color: colors.foreground }]}>
-                Processing your payment…
-              </Text>
-              <Text style={[styles.dialogBody, { color: colors.mutedForeground }]}>
-                This local demo will finish in a few seconds.
-              </Text>
-              <Text style={[styles.timer, { color: colors.primary }]}>
-                00:{String(countdown).padStart(2, '0')}
-              </Text>
-              <View style={[styles.progressTrack, { backgroundColor: colors.muted }]}>
-                <View
+                <Animated.View
                   style={[
-                    styles.progressFill,
+                    styles.loaderDot,
+                    styles.loaderDotLeft,
                     {
-                      backgroundColor: colors.primary,
-                      width: `${((5 - countdown) / 5) * 100}%`,
+                      backgroundColor: leftBallColor,
+                      transform: [
+                        { translateX: leftBallShift },
+                        { scale: leftBallScale },
+                      ],
+                    },
+                  ]}
+                />
+                <Animated.View
+                  style={[
+                    styles.loaderDot,
+                    styles.loaderDotRight,
+                    {
+                      backgroundColor: rightBallColor,
+                      transform: [
+                        { translateX: rightBallShift },
+                        { scale: rightBallScale },
+                      ],
                     },
                   ]}
                 />
               </View>
+              <Text style={[styles.dialogTitle, { color: colors.foreground }]}>
+                Processing demo payment…
+              </Text>
+              <Text style={[styles.dialogBody, { color: colors.mutedForeground }]}>
+                This simulation advances to the demo result in about 2 seconds.
+              </Text>
+              <Text style={[styles.timer, { color: colors.primary }]}>
+                {formatCountdown(countdown)}
+              </Text>
               <Text style={[styles.dialogFootnote, { color: colors.mutedForeground }]}>
-                No real payment is being made.
+                No real payment is made and no coins are delivered.
               </Text>
             </View>
           ) : (
@@ -1451,14 +1522,25 @@ const styles = StyleSheet.create({
     paddingBottom: 25,
   },
   loaderPair: {
-    flexDirection: 'row',
-    gap: 10,
+    width: 88,
+    height: 56,
+    position: 'relative',
     marginBottom: 28,
   },
   loaderDot: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    position: 'absolute',
+    top: 2,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+  },
+  loaderDotLeft: {
+    left: 0,
+    zIndex: 1,
+  },
+  loaderDotRight: {
+    right: 0,
+    zIndex: 2,
   },
   dialogTitle: {
     fontFamily: 'Inter_600SemiBold',
@@ -1477,17 +1559,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_700Bold',
     fontSize: 19,
     marginTop: 16,
-  },
-  progressTrack: {
-    height: 4,
-    width: '100%',
-    borderRadius: 3,
-    overflow: 'hidden',
-    marginTop: 13,
-  },
-  progressFill: {
-    height: '100%',
-    borderRadius: 3,
   },
   dialogFootnote: {
     fontFamily: 'Inter_400Regular',
