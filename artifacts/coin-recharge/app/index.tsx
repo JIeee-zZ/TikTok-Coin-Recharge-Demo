@@ -12,7 +12,7 @@ import {
   View,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import Svg, { ClipPath, Defs, G, Path } from 'react-native-svg';
 import * as Haptics from 'expo-haptics';
 import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
@@ -916,6 +916,7 @@ function ReviewScreen({
           testID="payment-method-apple"
           onPress={() => onSelectPayment('apple')}
           accessibilityRole="button"
+          accessibilityLabel="Apple Pay demo"
           accessibilityState={{ selected: paymentMethod === 'apple' }}
           style={({ pressed }) => [
             styles.paymentChoice,
@@ -926,12 +927,13 @@ function ReviewScreen({
             },
           ]}
         >
-          <View style={[styles.paymentIcon, { backgroundColor: colors.muted }]}>
-            <Feather name="smartphone" size={18} color={colors.foreground} />
+          <View style={styles.applePayMark} accessibilityLabel="Apple Pay">
+            <Ionicons name="logo-apple" size={21} color={colors.foreground} />
+            <Text style={[styles.applePayWordmark, { color: colors.foreground }]}>
+              Pay
+            </Text>
           </View>
-          <Text style={[styles.paymentName, { color: colors.foreground }]}>
-            Apple Pay
-          </Text>
+          <View style={styles.paymentNameSpacer} />
           <Text style={[styles.paymentDemoLabel, { color: colors.mutedForeground }]}>
             demo
           </Text>
@@ -1437,6 +1439,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 10,
+  },
+  applePayMark: {
+    width: 82,
+    minHeight: 36,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    gap: 3,
+  },
+  applePayWordmark: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 18,
+    letterSpacing: -0.6,
+  },
+  paymentNameSpacer: {
+    flex: 1,
   },
   paymentName: {
     fontFamily: 'Inter_500Medium',
