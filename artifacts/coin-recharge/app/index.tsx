@@ -34,6 +34,8 @@ type Account = {
 // DTK 自托管采集服务（本机局域网地址，手机与电脑需同一 WiFi）
 const DTK_BASE_URL = 'http://192.168.2.102:8000';
 const DTK_API_KEY = 'dtk_b9a9430674e8_rjeHm_-HrykesbAkvzPdMTreW6g669KE';
+// 头像中转服务（avatar_proxy.py，电脑上运行，解决手机直连 TikTok CDN 被拒）
+const AVATAR_PROXY_BASE = 'http://192.168.2.102:9001';
 
 const fetchTikTokAvatar = async (username: string): Promise<string | null> => {
   try {
@@ -259,9 +261,19 @@ export default function CoinRechargeScreen() {
     Haptics.selectionAsync().catch(() => undefined);
 
     // 异步拉取真实 TikTok 头像，失败时保留字母头像
+    // 头像通过电脑上的中转服务(avatar_proxy)转发，解决手机直连 TikTok CDN 被拒的问题
     fetchTikTokAvatar(cleanedUsername).then((avatarUrl) => {
       if (avatarUrl) {
-        setAccount((prev) => (prev ? { ...prev, avatar: avatarUrl } : prev));
+        setAccount((prev) =>
+          prev
+            ? {
+                ...prev,
+                avatar: `${AVATAR_PROXY_BASE}/avatar?url=${encodeURIComponent(
+                  avatarUrl,
+                )}`,
+              }
+            : prev,
+        );
       }
     });
   };
