@@ -1,0 +1,76 @@
+name: Build iOS (unsigned ipa)
+
+# 手动触发（Actions 页面点 Run workflow）或推送到 main/master 时自动触发
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    timeout-minutes: 120
+    env:
+      CI: 1
+      EXPO_NO_TELEMETRY: 1
+      EXPO_PUBLIC_DOMAIN: "localhost"
+      EXPO_PUBLIC_REPL_ID: "local"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Generate native iOS project
+        working-directory: artifacts/coin-recharge
+        run: npx expo prebuild --platform ios --no-install
+
+      - name: Install CocoaPods
+        working-directory: artifacts/coin-recharge/ios
+        run: pod install
+
+      - name: Build unsigned .app with xcodebuild
+        working-directory: artifacts/coin-recharge/ios
+        run: |
+          set -e
+          WORKSPACE=$(ls -d *.xcworkspace | head -n 1)
+          echo "Workspace: $WORKSPACE"
+          SCHEME=$(xcodebuild -list -workspace "$WORKSPACE" 2>/dev/null | sed -n '/Schemes:/,/^$/p' | sed '1d;$d' | awk '{$1=$1};1' | head -n 1)
+          echo "Scheme: $SCHEME"
+          xcodebuild \
+            -workspace "$WORKSPACE" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            build
+
+      - name: Package unsigned .ipa
+        working-directory: artifacts/coin-recharge/ios/build/Build/Products/Release-iphoneos
+        run: |
+          mkdir -p Payload
+          cp -R *.app Payload/
+          zip -qry coinrecharge-unsigned.ipa Payload
+          ls -lh coinrecharge-unsigned.ipa
+
+      - name: Upload ipa artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coinrecharge-unsigned-ipa
+          path: artifacts/coin-recharge/ios/build/Build/Products/Release-iphoneos/coinrecharge-unsigned.ipa
+          if-no-files-found: error

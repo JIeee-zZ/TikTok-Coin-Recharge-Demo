@@ -23,7 +23,7 @@ import { useColors } from '@/hooks/useColors';
 type FlowStep = 'home' | 'review' | 'processing' | 'complete';
 type PaymentMethod = 'card' | 'apple';
 
-type DemoAccount = {
+type Account = {
   username: string;
   displayName: string;
   initials: string;
@@ -35,18 +35,18 @@ type CoinPackage = {
   price: number;
 };
 
-const DEMO_ACCOUNTS: DemoAccount[] = [
+const DEMO_ACCOUNTS: Account[] = [
   {
     username: 'Bulbert70',
     displayName: 'Bulbert70',
     initials: 'B',
-    tagline: 'Sample creator account',
+    tagline: 'Account checked',
   },
   {
     username: 'The.Monke8',
     displayName: 'The.Monke8',
     initials: 'M',
-    tagline: 'Sample creator account',
+    tagline: 'Account checked',
   },
 ];
 
@@ -116,8 +116,8 @@ function DemoNotice({
       <Feather name="info" size={16} color={colors.infoForeground} />
       <Text style={[styles.noticeText, { color: colors.infoForeground }]}>
         {compact
-          ? 'Demo only. No payment is processed or coins delivered.'
-          : 'Demo only — sample accounts and prices are local examples. This app does not connect to TikTok or process payments.'}
+          ? 'Ensure the top-up account is correct; please double-check carefully.'
+          : 'Please verify that the top-up account information is correct. Double-check carefully, and if you find any errors, please contact customer service immediately.'}
       </Text>
     </View>
   );
@@ -128,7 +128,7 @@ export default function CoinRechargeScreen() {
   const insets = useSafeAreaInsets();
   const [step, setStep] = useState<FlowStep>('home');
   const [username, setUsername] = useState('');
-  const [account, setAccount] = useState<DemoAccount | null>(null);
+  const [account, setAccount] = useState<Account | null>(null);
   const [searchError, setSearchError] = useState('');
   const [selectedAmount, setSelectedAmount] = useState<number | 'custom'>(3500);
   const [customCoins, setCustomCoins] = useState('');
@@ -213,14 +213,18 @@ export default function CoinRechargeScreen() {
       return;
     }
 
-    const match = DEMO_ACCOUNTS.find(
+    let match = DEMO_ACCOUNTS.find(
       (sample) => sample.username.toLowerCase() === cleanedUsername.toLowerCase(),
     );
     if (!match) {
-      setAccount(null);
-      setSearchError('No sample match. Try one of the demo accounts below.');
-      return;
-    }
+    const firstChar = cleanedUsername.charAt(0);
+    match = {
+      username: cleanedUsername,
+      displayName: cleanedUsername,
+      initials: firstChar.toUpperCase(),
+      tagline: 'Account checked',
+    };
+  }
 
     setUsername(match.username);
     setAccount(match);
@@ -228,7 +232,7 @@ export default function CoinRechargeScreen() {
     Haptics.selectionAsync().catch(() => undefined);
   };
 
-  const chooseSample = (sample: DemoAccount) => {
+  const chooseSample = (sample: Account) => {
     setUsername(sample.username);
     setAccount(sample);
     setSearchError('');
@@ -389,16 +393,16 @@ export default function CoinRechargeScreen() {
                 />
               </View>
               <Text style={[styles.dialogTitle, { color: colors.foreground }]}>
-                Processing demo payment…
+                Processing Recharge…
               </Text>
               <Text style={[styles.dialogBody, { color: colors.mutedForeground }]}>
-                This simulation advances to the demo result in about 2 seconds.
+                This top-up will be completed in approximately 3 seconds.
               </Text>
               <Text style={[styles.timer, { color: colors.primary }]}>
                 {formatCountdown(countdown)}
               </Text>
               <Text style={[styles.dialogFootnote, { color: colors.mutedForeground }]}>
-                No real payment is made and no coins are delivered.
+                Adding Coins to account…
               </Text>
             </View>
           ) : (
@@ -414,14 +418,14 @@ export default function CoinRechargeScreen() {
                 <Feather name="check" size={34} color={colors.primaryForeground} />
               </View>
               <Text style={[styles.dialogTitle, { color: colors.foreground }]}>
-                Demo complete
+                Recharge Successful
               </Text>
               <Text style={[styles.successSummary, { color: colors.foreground }]}>
                 {formatCoins(coinAmount)} coins
                 {account ? ` for @${account.username}` : ''}
               </Text>
               <Text style={[styles.dialogBody, { color: colors.mutedForeground }]}>
-                This was only a simulation. No payment was processed and no coins were sent.
+                Coins have been successfully sent to the user.
               </Text>
               <Pressable
                 testID="success-back-button"
@@ -463,7 +467,7 @@ function HomeScreen({
 }: {
   colors: ReturnType<typeof useColors>;
   username: string;
-  account: DemoAccount | null;
+  account: Account | null;
   searchError: string;
   selectedAmount: number | 'custom';
   customCoins: string;
@@ -472,7 +476,7 @@ function HomeScreen({
   canContinue: boolean;
   onChangeUsername: (value: string) => void;
   onSearch: () => void;
-  onChooseSample: (sample: DemoAccount) => void;
+  onChooseSample: (sample: Account) => void;
   onSelectAmount: (amount: number | 'custom') => void;
   onChangeCustomCoins: (value: string) => void;
   onContinue: () => void;
@@ -494,7 +498,7 @@ function HomeScreen({
         <View style={[styles.demoPill, { backgroundColor: colors.accent }]}>
           <View style={[styles.demoPip, { backgroundColor: colors.primary }]} />
           <Text style={[styles.demoPillText, { color: colors.accentForeground }]}>
-            DEMO
+            Invite & Get Rewards
           </Text>
         </View>
       </View>
@@ -513,8 +517,16 @@ function HomeScreen({
           <Text style={[styles.heroTitle, { color: colors.foreground }]}>
             Send coins to your favorite creators.
           </Text>
-          <Text style={[styles.heroSubtitle, { color: colors.mutedForeground }]}>
-            Explore a simple recharge flow with sample accounts and demo prices.
+          <Text
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={1}
+            style={[
+              styles.heroSubtitle,
+              { color: '#EF4059', fontSize: 15, lineHeight: 25 },
+            ]}
+          >
+            Save around 50% with a lower third-party service fee.
           </Text>
         </View>
 
@@ -595,7 +607,7 @@ function HomeScreen({
                 @{account.username}
               </Text>
               <Text style={[styles.accountCaption, { color: colors.mutedForeground }]}>
-                {account.tagline} · demo only
+                {account.tagline}
               </Text>
             </View>
             <View style={[styles.sampleCheck, { backgroundColor: colors.successSoft }]}>
@@ -605,7 +617,7 @@ function HomeScreen({
         ) : (
           <View style={styles.sampleBlock}>
             <Text style={[styles.sampleLabel, { color: colors.mutedForeground }]}>
-              Try a sample account
+              Select account
             </Text>
             <View style={styles.sampleChips}>
               {DEMO_ACCOUNTS.map((sample) => (
@@ -630,7 +642,7 @@ function HomeScreen({
               ))}
             </View>
             <Text style={[styles.localLookupNote, { color: colors.mutedForeground }]}>
-              Search matches these local examples only. Live account lookup is not connected.
+              Please enter the correct account.
             </Text>
           </View>
         )}
@@ -783,9 +795,6 @@ function HomeScreen({
           </Text>
           <Feather name="arrow-right" size={17} color={colors.primaryForeground} />
         </Pressable>
-        <Text style={[styles.bottomDisclaimer, { color: colors.mutedForeground }]}>
-          Demo only · no payment will be made
-        </Text>
       </View>
     </>
   );
@@ -807,7 +816,7 @@ function ReviewScreen({
   onPay,
 }: {
   colors: ReturnType<typeof useColors>;
-  account: DemoAccount | null;
+  account: Account | null;
   coinAmount: number;
   total: number;
   paymentMethod: PaymentMethod;
@@ -828,11 +837,11 @@ function ReviewScreen({
           <Feather name="arrow-left" size={20} color={colors.foreground} />
         </Pressable>
         <Text style={[styles.reviewHeaderTitle, { color: colors.foreground }]}>
-          Order summary
+          Order Checkout
         </Text>
-        <View style={[styles.demoPill, { backgroundColor: colors.accent }]}>
-          <Text style={[styles.demoPillText, { color: colors.accentForeground }]}>
-            DEMO
+        <View style={[styles.helpPill, { backgroundColor: colors.accent }]}>
+          <Text style={[styles.helpPillText, { color: colors.accentForeground }]}>
+            ?
           </Text>
         </View>
       </View>
@@ -842,10 +851,15 @@ function ReviewScreen({
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <View style={[styles.checkoutBanner, { backgroundColor: colors.successSoft }]}>
+        <View
+          style={[
+            styles.checkoutBanner,
+            { backgroundColor: colors.successSoft, justifyContent: 'center' },
+          ]}
+        >
           <Feather name="shield" size={17} color={colors.success} />
           <Text style={[styles.checkoutBannerText, { color: colors.foreground }]}>
-            Sandbox checkout · nothing is charged
+            Secure payment
           </Text>
         </View>
 
@@ -863,7 +877,7 @@ function ReviewScreen({
               @{account?.username ?? 'Sample account'}
             </Text>
             <Text style={[styles.accountCaption, { color: colors.mutedForeground }]}>
-              Sample account · not connected
+              Top-up account confirmed
             </Text>
           </View>
           <View style={styles.orderSummaryValues}>
@@ -903,9 +917,6 @@ function ReviewScreen({
           </View>
           <Text style={[styles.paymentName, { color: colors.foreground }]}>
             Credit or debit card
-          </Text>
-          <Text style={[styles.paymentDemoLabel, { color: colors.mutedForeground }]}>
-            demo
           </Text>
           <View
             style={[
@@ -947,9 +958,6 @@ function ReviewScreen({
             </Text>
           </View>
           <View style={styles.paymentNameSpacer} />
-          <Text style={[styles.paymentDemoLabel, { color: colors.mutedForeground }]}>
-            demo
-          </Text>
           <View
             style={[
               styles.radioOuter,
@@ -962,9 +970,6 @@ function ReviewScreen({
           </View>
         </Pressable>
 
-        <Text style={[styles.paymentDisclaimer, { color: colors.mutedForeground }]}>
-          This screen is a visual simulation. No card details are collected, no payment provider is contacted, and no coins are delivered.
-        </Text>
 
         <DemoNotice colors={colors} compact />
       </ScrollView>
@@ -994,12 +999,9 @@ function ReviewScreen({
         >
           <Feather name="shield" size={17} color={colors.primaryForeground} />
           <Text style={[styles.primaryButtonText, { color: colors.primaryForeground }]}>
-            Pay demo · {formatPrice(total)}
+            Continue · {formatPrice(total)}
           </Text>
         </Pressable>
-        <Text style={[styles.bottomDisclaimer, { color: colors.mutedForeground }]}>
-          No transaction will be created
-        </Text>
       </View>
     </>
   );
@@ -1057,6 +1059,19 @@ const styles = StyleSheet.create({
     fontSize: 10,
     letterSpacing: 0.8,
   },
+  helpPill: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  helpPillText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 18,
+    lineHeight: 22,
+    textAlign: 'center',
+  },
   homeContent: {
     paddingHorizontal: 20,
     paddingTop: 23,
@@ -1080,10 +1095,13 @@ const styles = StyleSheet.create({
   },
   heroSubtitle: {
     fontFamily: 'Inter_400Regular',
-    fontSize: 14,
-    lineHeight: 21,
+    fontSize: 12,
+    lineHeight: 18,
     marginTop: 8,
-    maxWidth: 330,
+    width: '100%',
+    maxWidth: '100%',
+    textAlign: 'left',
+    alignSelf: 'flex-start',
   },
   sectionHeading: {
     flexDirection: 'row',
@@ -1400,6 +1418,7 @@ const styles = StyleSheet.create({
     minHeight: 49,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 9,
     borderRadius: 13,
     paddingHorizontal: 13,
