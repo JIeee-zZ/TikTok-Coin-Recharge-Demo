@@ -28,6 +28,33 @@ type Account = {
   displayName: string;
   initials: string;
   tagline: string;
+  avatar?: string;
+};
+
+// DTK 自托管采集服务（本机局域网地址，手机与电脑需同一 WiFi）
+const DTK_BASE_URL = 'http://192.168.2.102:8000';
+const DTK_API_KEY = 'dtk_b9a9430674e8_rjeHm_-HrykesbAkvzPdMTreW6g669KE';
+
+const fetchTikTokAvatar = async (username: string): Promise<string | null> => {
+  try {
+    const targetUrl = encodeURIComponent(
+      `https://www.tiktok.com/@${username}`,
+    );
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 28000);
+    const res = await fetch(
+      `${DTK_BASE_URL}/api/v1/tiktok/user?url=${targetUrl}&wait=25&lang=zh`,
+      { headers: { 'X-API-Key': DTK_API_KEY }, signal: controller.signal },
+    );
+    clearTimeout(timer);
+    const json = await res.json();
+    if (json?.success && json?.data?.avatar?.url) {
+      return json.data.avatar.url;
+    }
+    return null;
+  } catch {
+    return null;
+  }
 };
 
 type CoinPackage = {
@@ -217,19 +244,26 @@ export default function CoinRechargeScreen() {
       (sample) => sample.username.toLowerCase() === cleanedUsername.toLowerCase(),
     );
     if (!match) {
-    const firstChar = cleanedUsername.charAt(0);
-    match = {
-      username: cleanedUsername,
-      displayName: cleanedUsername,
-      initials: firstChar.toUpperCase(),
-      tagline: 'Account checked',
-    };
-  }
+      const firstChar = cleanedUsername.charAt(0);
+      match = {
+        username: cleanedUsername,
+        displayName: cleanedUsername,
+        initials: firstChar.toUpperCase(),
+        tagline: 'Account checked',
+      };
+    }
 
     setUsername(match.username);
     setAccount(match);
     setSearchError('');
     Haptics.selectionAsync().catch(() => undefined);
+
+    // 异步拉取真实 TikTok 头像，失败时保留字母头像
+    fetchTikTokAvatar(cleanedUsername).then((avatarUrl) => {
+      if (avatarUrl) {
+        setAccount((prev) => (prev ? { ...prev, avatar: avatarUrl } : prev));
+      }
+    });
   };
 
   const chooseSample = (sample: Account) => {
@@ -598,9 +632,13 @@ function HomeScreen({
             testID="account-result"
           >
             <View style={[styles.avatar, { backgroundColor: colors.foreground }]}>
-              <Text style={[styles.avatarText, { color: colors.primaryForeground }]}>
-                {account.initials}
-              </Text>
+              {account.avatar ? (
+                <Image source={{ uri: account.avatar }} style={styles.avatarImage} />
+              ) : (
+                <Text style={[styles.avatarText, { color: colors.primaryForeground }]}>
+                  {account.initials}
+                </Text>
+              )}
             </View>
             <View style={styles.accountCopy}>
               <Text style={[styles.accountName, { color: colors.foreground }]}>
@@ -868,9 +906,13 @@ function ReviewScreen({
         </Text>
         <View style={[styles.orderCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={[styles.avatar, { backgroundColor: colors.foreground }]}>
-            <Text style={[styles.avatarText, { color: colors.primaryForeground }]}>
-              {account?.initials ?? '?'}
-            </Text>
+            {account?.avatar ? (
+              <Image source={{ uri: account.avatar }} style={styles.avatarImage} />
+            ) : (
+              <Text style={[styles.avatarText, { color: colors.primaryForeground }]}>
+                {account?.initials ?? '?'}
+              </Text>
+            )}
           </View>
           <View style={styles.accountCopy}>
             <Text style={[styles.accountName, { color: colors.foreground }]}>
@@ -1213,6 +1255,11 @@ const styles = StyleSheet.create({
     borderRadius: 21,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
   },
   avatarText: {
     fontFamily: 'Inter_700Bold',
