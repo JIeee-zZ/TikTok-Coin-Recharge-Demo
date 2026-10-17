@@ -12,7 +12,13 @@
     },
     "ios": {
       "supportsTablet": false,
-      "bundleIdentifier": "com.coinrecharge.app"
+      "bundleIdentifier": "com.coinrecharge.app",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true,
+          "NSAllowsLocalNetworking": true
+        }
+      }
     },
     "android": {
       "package": "com.coinrecharge.app"
