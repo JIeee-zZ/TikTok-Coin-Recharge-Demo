@@ -31,27 +31,26 @@ type Account = {
   avatar?: string;
 };
 
-// DTK 自托管采集服务（本机局域网地址，手机与电脑需同一 WiFi）
-const DTK_BASE_URL = 'http://192.168.2.102:8000';
-const DTK_API_KEY = 'dtk_b9a9430674e8_rjeHm_-HrykesbAkvzPdMTreW6g669KE';
-// 头像中转服务（avatar_proxy.py，电脑上运行，解决手机直连 TikTok CDN 被拒）
+// 头像中转服务（avatar_proxy.py，电脑上运行）：
+//  - /tiktok-user 代理 DTK 用户资料接口（App 不直接携带 API Key）
+//  - /avatar 转发 TikTok 头像图片（解决手机直连 TikTok CDN 被拒）
+// 手机与电脑需同一 WiFi
 const AVATAR_PROXY_BASE = 'http://192.168.2.102:9001';
 
 const fetchTikTokAvatar = async (username: string): Promise<string | null> => {
   try {
-    const targetUrl = encodeURIComponent(
-      `https://www.tiktok.com/@${username}`,
-    );
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 28000);
     const res = await fetch(
-      `${DTK_BASE_URL}/api/v1/tiktok/user?url=${targetUrl}&wait=25&lang=zh`,
-      { headers: { 'X-API-Key': DTK_API_KEY }, signal: controller.signal },
+      `${AVATAR_PROXY_BASE}/tiktok-user?username=${encodeURIComponent(username)}`,
+      { signal: controller.signal },
     );
     clearTimeout(timer);
     const json = await res.json();
-    if (json?.success && json?.data?.avatar?.url) {
-      return json.data.avatar.url;
+    if (json?.success && json?.data?.avatar) {
+      // 取最小尺寸头像（100x100，几 KB），显示 42px 圆形绰绰有余，加载快
+      const urls: string[] = json.data.avatar.urls ?? [];
+      return urls.length > 0 ? urls[urls.length - 1] : json.data.avatar.url;
     }
     return null;
   } catch {
