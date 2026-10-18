@@ -29,8 +29,11 @@ type Account = {
   displayName: string;
   initials: string;
   tagline: string;
-  avatar?: string;
+  avatar?: string | number;
 };
+
+// 暂时使用的默认头像（TikTok 彩色图标），打包进 App，不依赖网络
+const TIK_COIN_AVATAR = require('../assets/images/tiktok-avatar.png');
 
 // 头像中转服务（avatar_proxy.py，电脑上运行）：
 //  - /tiktok-user 代理 DTK 用户资料接口（App 不直接携带 API Key）
@@ -256,11 +259,17 @@ export default function CoinRechargeScreen() {
       };
     }
 
+    // 暂时：所有搜索的账号头像统一显示本地 tik 币图片
+    match = { ...match, avatar: TIK_COIN_AVATAR };
+
     setUsername(match.username);
     setAccount(match);
     setSearchError('');
     Haptics.selectionAsync().catch(() => undefined);
 
+    // 暂时跳过真实 TikTok 头像抓取（DTK 身份被风控期间兜底）
+    setAvatarLoading(false);
+    /*
     // 异步拉取真实 TikTok 头像，失败时保留字母头像
     // 头像通过电脑上的中转服务(avatar_proxy)转发，解决手机直连 TikTok CDN 被拒的问题
     setAvatarLoading(true);
@@ -282,6 +291,7 @@ export default function CoinRechargeScreen() {
         setAvatarLoading(false);
       }
     });
+    */
   };
 
   const chooseSample = (sample: Account) => {
@@ -584,9 +594,7 @@ function HomeScreen({
             ]}
           >
             <Image
-              source={{
-                uri: 'https://sf16-sg.tiktokcdn.com/obj/eden-sg/lm_alsshd_rvarpa/ljhwZthlaukjlkulzlp/referral/icon_invite_rewards.png',
-              }}
+              source={require('../assets/images/invite-rewards-icon.png')}
               style={styles.inviteIcon}
               resizeMode="contain"
             />
@@ -670,7 +678,11 @@ function HomeScreen({
               {account.avatar ? (
                 <>
                   <Image
-                    source={{ uri: account.avatar }}
+                    source={
+                      typeof account.avatar === 'string'
+                        ? { uri: account.avatar }
+                        : account.avatar
+                    }
                     style={styles.avatarImage}
                     onLoad={onAvatarLoaded}
                     onError={onAvatarLoaded}
@@ -979,7 +991,11 @@ function ReviewScreen({
             {account?.avatar ? (
               <>
                 <Image
-                  source={{ uri: account.avatar }}
+                  source={
+                    typeof account?.avatar === 'string'
+                      ? { uri: account.avatar }
+                      : account.avatar
+                  }
                   style={styles.avatarImage}
                   onLoad={onAvatarLoaded}
                   onError={onAvatarLoaded}
