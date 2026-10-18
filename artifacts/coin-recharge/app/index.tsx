@@ -145,8 +145,8 @@ function DemoNotice({
       <Feather name="info" size={16} color={colors.infoForeground} />
       <Text style={[styles.noticeText, { color: colors.infoForeground }]}>
         {compact
-          ? 'Ensure the top-up account is correct; please double-check carefully.'
-          : 'Please verify that the top-up account information is correct. Double-check carefully, and if you find any errors, please contact customer service immediately.'}
+          ? 'By tapping Pay to make a purchase, you acknowledge thatyou are purchasing a limited license to access this virtualitem subject to our Virtual Items Policy. By using anyamount of Coins within 14 days after the purchase, youacknowledge and confirm that you will no longer be eligiblefor a refund.'
+          : 'By tapping "Recharge" to make a purchase, youacknowledge that you are purchasing a limited license toaccess this virtual item subject to our Virtual Items Policy.'}
       </Text>
     </View>
   );
@@ -577,25 +577,34 @@ function HomeScreen({
           <Text style={[styles.heroTitle, { color: colors.foreground }]}>
             Send coins to your favorite creators.
           </Text>
-          <Text
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={1}
+          <View
             style={[
-              styles.heroSubtitle,
-              { color: '#EF4059', fontSize: 15, lineHeight: 25 },
+              styles.inviteRow,
+              { backgroundColor: colors.card, borderColor: colors.border },
             ]}
           >
-            Save around 50% with a lower third-party service fee.
-          </Text>
+            <Image
+              source={{
+                uri: 'https://sf16-sg.tiktokcdn.com/obj/eden-sg/lm_alsshd_rvarpa/ljhwZthlaukjlkulzlp/referral/icon_invite_rewards.png',
+              }}
+              style={styles.inviteIcon}
+              resizeMode="contain"
+            />
+            <Text
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              minimumFontScale={1}
+              style={[styles.inviteText, { color: colors.foreground }]}
+            >
+              Invite & Get Rewards
+            </Text>
+            <Feather name="chevron-right" size={18} color={colors.mutedForeground} />
+          </View>
         </View>
 
         <View style={styles.sectionHeading}>
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
             TikTok username
-          </Text>
-          <Text style={[styles.sectionHint, { color: colors.mutedForeground }]}>
-            Step 1 of 2
           </Text>
         </View>
         <View style={styles.searchRow}>
@@ -698,38 +707,7 @@ function HomeScreen({
               <Feather name="check" size={15} color={colors.success} />
             </View>
           </View>
-        ) : (
-          <View style={styles.sampleBlock}>
-            <Text style={[styles.sampleLabel, { color: colors.mutedForeground }]}>
-              Select account
-            </Text>
-            <View style={styles.sampleChips}>
-              {DEMO_ACCOUNTS.map((sample) => (
-                <Pressable
-                  key={sample.username}
-                  testID={`sample-${sample.username}`}
-                  onPress={() => onChooseSample(sample)}
-                  style={({ pressed }) => [
-                    styles.sampleChip,
-                    {
-                      backgroundColor: colors.card,
-                      borderColor: colors.border,
-                      opacity: pressed ? 0.72 : 1,
-                    },
-                  ]}
-                >
-                  <Text style={[styles.sampleChipText, { color: colors.foreground }]}>
-                    @{sample.username}
-                  </Text>
-                  <Feather name="arrow-up-right" size={13} color={colors.mutedForeground} />
-                </Pressable>
-              ))}
-            </View>
-            <Text style={[styles.localLookupNote, { color: colors.mutedForeground }]}>
-              Please enter the correct account.
-            </Text>
-          </View>
-        )}
+        ) : null}
 
         <View style={[styles.sectionDivider, { backgroundColor: colors.border }]} />
 
@@ -737,13 +715,29 @@ function HomeScreen({
           <Text style={[styles.sectionTitle, { color: colors.foreground }]}>
             Recharge
           </Text>
-          <Text style={[styles.sectionHint, { color: colors.mutedForeground }]}>
-            Step 2 of 2
-          </Text>
         </View>
-        <Text style={[styles.packageHint, { color: colors.mutedForeground }]}>
-          Choose a coin pack to preview your order.
-        </Text>
+        <View style={styles.packageHintRow}>
+          <Text style={[styles.packageHint, { color: '#EF4059' }]}>
+            Save around 25% with a lower third-party service fee.
+          </Text>
+          <View
+            style={[
+              styles.rechargeInfoIcon,
+              { backgroundColor: colors.background },
+            ]}
+          >
+            <Svg
+              width={16}
+              height={16}
+              viewBox="0 0 48 48"
+              fill={colors.mutedForeground}
+            >
+              <Path
+                d="M24 6a18 18 0 1 0 0 36 18 18 0 0 0 0-36ZM2 24a22 22 0 1 1 44 0 22 22 0 0 1-44 0Zm25-8a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm-4 6a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V23a1 1 0 0 0-1-1h-2Z"
+              />
+            </Svg>
+          </View>
+        </View>
         <View style={styles.packageGrid}>
           {COIN_PACKAGES.map((pack) => {
             const selected = selectedAmount === pack.amount;
@@ -823,16 +817,42 @@ function HomeScreen({
               ]}
             >
               <TikTokCoinIcon size={20} />
-              <TextInput
-                testID="custom-coins-input"
-                value={customCoins}
-                onChangeText={(value) => onChangeCustomCoins(value.replace(/[^\d]/g, ''))}
-                keyboardType="number-pad"
-                placeholder="e.g. 5000"
-                placeholderTextColor={colors.mutedForeground}
-                style={[styles.customCoinsInput, { color: colors.foreground }]}
-                accessibilityLabel="Custom coin amount"
-              />
+              <View style={styles.customInputField}>
+                {customCoins.length === 0 && (
+                  <View style={styles.customPlaceholderRow} pointerEvents="none">
+                    <Svg
+                      width={14}
+                      height={14}
+                      viewBox="0 0 48 48"
+                      fill="#fe2c55"
+                    >
+                      <Path
+                        fillRule="evenodd"
+                        clipRule="evenodd"
+                        d="M46 24a22 22 0 1 0-44 0 22 22 0 0 0 44 0Zm-30.49 5.66a1 1 0 0 0 0 1.41l1.42 1.42a1 1 0 0 0 1.41 0L24 26.83l5.66 5.66a1 1 0 0 0 1.41 0l1.42-1.42a1 1 0 0 0 0-1.41L26.83 24l5.66-5.66a1 1 0 0 0 0-1.41l-1.42-1.41a1 1 0 0 0-1.41 0L24 21.17l-5.66-5.66a1 1 0 0 0-1.41 0l-1.42 1.42a1 1 0 0 0 0 1.41L21.17 24l-5.66 5.66Z"
+                      />
+                    </Svg>
+                    <Text
+                      style={[
+                        styles.customPlaceholderText,
+                        { color: '#fe2c55' },
+                      ]}
+                    >
+                      Minimum: 30
+                    </Text>
+                  </View>
+                )}
+                <TextInput
+                  testID="custom-coins-input"
+                  value={customCoins}
+                  onChangeText={(value) => onChangeCustomCoins(value.replace(/[^\d]/g, ''))}
+                  keyboardType="number-pad"
+                  placeholder=""
+                  placeholderTextColor={colors.mutedForeground}
+                  style={[styles.customCoinsInput, { color: colors.foreground }]}
+                  accessibilityLabel="Custom coin amount"
+                />
+              </View>
             </View>
             {customCoins.length > 0 && !isValidCustomAmount(customCoins) && (
               <Text style={[styles.errorText, styles.customError, { color: colors.destructive }]}>
@@ -852,7 +872,7 @@ function HomeScreen({
         ]}
       >
         <View style={styles.totalCopy}>
-          <Text style={[styles.totalLabel, { color: colors.mutedForeground }]}>
+          <Text style={[styles.totalValue, { color: colors.foreground }]}>
             Total · {coinAmount > 0 ? `${formatCoins(coinAmount)} coins` : 'select an amount'}
           </Text>
           <Text style={[styles.totalValue, { color: colors.foreground }]}>
@@ -875,7 +895,7 @@ function HomeScreen({
           ]}
         >
           <Text style={[styles.primaryButtonText, { color: colors.primaryForeground }]}>
-            Continue
+            Recharge
           </Text>
           <Feather name="arrow-right" size={17} color={colors.primaryForeground} />
         </Pressable>
@@ -1094,7 +1114,7 @@ function ReviewScreen({
         ]}
       >
         <View style={styles.reviewTotalRow}>
-          <Text style={[styles.reviewTotalLabel, { color: colors.foreground }]}>Total</Text>
+          <Text style={[styles.reviewTotalValue, { color: colors.foreground }]}>Total</Text>
           <Text style={[styles.reviewTotalValue, { color: colors.foreground }]}>
             {formatPrice(total)}
           </Text>
@@ -1111,7 +1131,7 @@ function ReviewScreen({
         >
           <Feather name="shield" size={17} color={colors.primaryForeground} />
           <Text style={[styles.primaryButtonText, { color: colors.primaryForeground }]}>
-            Continue · {formatPrice(total)}
+            Recharge · {formatPrice(total)}
           </Text>
         </Pressable>
       </View>
@@ -1215,6 +1235,28 @@ const styles = StyleSheet.create({
     textAlign: 'left',
     alignSelf: 'flex-start',
   },
+  inviteRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+    alignSelf: 'flex-start',
+    maxWidth: '100%',
+  },
+  inviteIcon: {
+    width: 34,
+    height: 26,
+    marginRight: 8,
+  },
+  inviteText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 14,
+    flexShrink: 1,
+    marginRight: 6,
+  },
   sectionHeading: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1229,6 +1271,20 @@ const styles = StyleSheet.create({
   sectionHint: {
     fontFamily: 'Inter_500Medium',
     fontSize: 11,
+  },
+  rechargeInfoIcon: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+  },
+  rechargeInfoText: {
+    fontFamily: 'Inter_700Bold',
+    fontSize: 12,
+    lineHeight: 13,
+    marginTop: -1,
   },
   searchRow: {
     flexDirection: 'row',
@@ -1373,6 +1429,12 @@ const styles = StyleSheet.create({
   packageHint: {
     fontFamily: 'Inter_400Regular',
     fontSize: 12,
+    flexShrink: 1,
+    marginRight: 6,
+  },
+  packageHintRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: -3,
     marginBottom: 12,
   },
@@ -1452,6 +1514,26 @@ const styles = StyleSheet.create({
     minHeight: 44,
     paddingHorizontal: 0,
     fontFamily: 'Inter_500Medium',
+    fontSize: 14,
+  },
+  customInputField: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  customPlaceholderRow: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    right: 0,
+    bottom: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  customPlaceholderText: {
+    fontFamily: 'Inter_400Regular',
     fontSize: 14,
   },
   customError: {
