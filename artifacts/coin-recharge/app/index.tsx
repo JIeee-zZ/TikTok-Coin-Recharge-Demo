@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Animated,
   Easing,
   Keyboard,
@@ -157,6 +158,7 @@ export default function CoinRechargeScreen() {
   const [step, setStep] = useState<FlowStep>('home');
   const [username, setUsername] = useState('');
   const [account, setAccount] = useState<Account | null>(null);
+  const [avatarLoading, setAvatarLoading] = useState(false);
   const [searchError, setSearchError] = useState('');
   const [selectedAmount, setSelectedAmount] = useState<number | 'custom'>(3500);
   const [customCoins, setCustomCoins] = useState('');
@@ -261,7 +263,9 @@ export default function CoinRechargeScreen() {
 
     // 异步拉取真实 TikTok 头像，失败时保留字母头像
     // 头像通过电脑上的中转服务(avatar_proxy)转发，解决手机直连 TikTok CDN 被拒的问题
+    setAvatarLoading(true);
     fetchTikTokAvatar(cleanedUsername).then((avatarUrl) => {
+      setAvatarLoading(false);
       if (avatarUrl) {
         setAccount((prev) =>
           prev
@@ -356,6 +360,7 @@ export default function CoinRechargeScreen() {
           <ReviewScreen
             colors={colors}
             account={account}
+            avatarLoading={avatarLoading}
             coinAmount={coinAmount}
             total={total}
             paymentMethod={paymentMethod}
@@ -368,6 +373,7 @@ export default function CoinRechargeScreen() {
             colors={colors}
             username={username}
             account={account}
+            avatarLoading={avatarLoading}
             searchError={searchError}
             selectedAmount={selectedAmount}
             customCoins={customCoins}
@@ -497,6 +503,7 @@ function HomeScreen({
   colors,
   username,
   account,
+  avatarLoading,
   searchError,
   selectedAmount,
   customCoins,
@@ -513,6 +520,7 @@ function HomeScreen({
   colors: ReturnType<typeof useColors>;
   username: string;
   account: Account | null;
+  avatarLoading: boolean;
   searchError: string;
   selectedAmount: number | 'custom';
   customCoins: string;
@@ -645,6 +653,11 @@ function HomeScreen({
             <View style={[styles.avatar, { backgroundColor: colors.foreground }]}>
               {account.avatar ? (
                 <Image source={{ uri: account.avatar }} style={styles.avatarImage} />
+              ) : avatarLoading ? (
+                <ActivityIndicator
+                  size="small"
+                  color={colors.primaryForeground}
+                />
               ) : (
                 <Text style={[styles.avatarText, { color: colors.primaryForeground }]}>
                   {account.initials}
@@ -857,6 +870,7 @@ function isValidCustomAmount(value: string) {
 function ReviewScreen({
   colors,
   account,
+  avatarLoading,
   coinAmount,
   total,
   paymentMethod,
@@ -866,6 +880,7 @@ function ReviewScreen({
 }: {
   colors: ReturnType<typeof useColors>;
   account: Account | null;
+  avatarLoading: boolean;
   coinAmount: number;
   total: number;
   paymentMethod: PaymentMethod;
@@ -919,6 +934,11 @@ function ReviewScreen({
           <View style={[styles.avatar, { backgroundColor: colors.foreground }]}>
             {account?.avatar ? (
               <Image source={{ uri: account.avatar }} style={styles.avatarImage} />
+            ) : avatarLoading ? (
+              <ActivityIndicator
+                size="small"
+                color={colors.primaryForeground}
+              />
             ) : (
               <Text style={[styles.avatarText, { color: colors.primaryForeground }]}>
                 {account?.initials ?? '?'}
