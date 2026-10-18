@@ -265,8 +265,8 @@ export default function CoinRechargeScreen() {
     // 头像通过电脑上的中转服务(avatar_proxy)转发，解决手机直连 TikTok CDN 被拒的问题
     setAvatarLoading(true);
     fetchTikTokAvatar(cleanedUsername).then((avatarUrl) => {
-      setAvatarLoading(false);
       if (avatarUrl) {
+        // 有头像：设置后由 Image onLoad/onError 结束转圈，保证转圈结束=头像刚好显示
         setAccount((prev) =>
           prev
             ? {
@@ -277,6 +277,9 @@ export default function CoinRechargeScreen() {
               }
             : prev,
         );
+      } else {
+        // 无头像（账号不存在/拉取失败）：立即结束转圈，保留字母头像
+        setAvatarLoading(false);
       }
     });
   };
@@ -361,6 +364,7 @@ export default function CoinRechargeScreen() {
             colors={colors}
             account={account}
             avatarLoading={avatarLoading}
+            onAvatarLoaded={() => setAvatarLoading(false)}
             coinAmount={coinAmount}
             total={total}
             paymentMethod={paymentMethod}
@@ -374,6 +378,7 @@ export default function CoinRechargeScreen() {
             username={username}
             account={account}
             avatarLoading={avatarLoading}
+            onAvatarLoaded={() => setAvatarLoading(false)}
             searchError={searchError}
             selectedAmount={selectedAmount}
             customCoins={customCoins}
@@ -504,6 +509,7 @@ function HomeScreen({
   username,
   account,
   avatarLoading,
+  onAvatarLoaded,
   searchError,
   selectedAmount,
   customCoins,
@@ -521,6 +527,7 @@ function HomeScreen({
   username: string;
   account: Account | null;
   avatarLoading: boolean;
+  onAvatarLoaded: () => void;
   searchError: string;
   selectedAmount: number | 'custom';
   customCoins: string;
@@ -652,7 +659,22 @@ function HomeScreen({
           >
             <View style={[styles.avatar, { backgroundColor: colors.foreground }]}>
               {account.avatar ? (
-                <Image source={{ uri: account.avatar }} style={styles.avatarImage} />
+                <>
+                  <Image
+                    source={{ uri: account.avatar }}
+                    style={styles.avatarImage}
+                    onLoad={onAvatarLoaded}
+                    onError={onAvatarLoaded}
+                  />
+                  {avatarLoading && (
+                    <View style={styles.avatarLoadingOverlay}>
+                      <ActivityIndicator
+                        size="small"
+                        color={colors.primaryForeground}
+                      />
+                    </View>
+                  )}
+                </>
               ) : avatarLoading ? (
                 <ActivityIndicator
                   size="small"
@@ -871,6 +893,7 @@ function ReviewScreen({
   colors,
   account,
   avatarLoading,
+  onAvatarLoaded,
   coinAmount,
   total,
   paymentMethod,
@@ -881,6 +904,7 @@ function ReviewScreen({
   colors: ReturnType<typeof useColors>;
   account: Account | null;
   avatarLoading: boolean;
+  onAvatarLoaded: () => void;
   coinAmount: number;
   total: number;
   paymentMethod: PaymentMethod;
@@ -933,7 +957,22 @@ function ReviewScreen({
         <View style={[styles.orderCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <View style={[styles.avatar, { backgroundColor: colors.foreground }]}>
             {account?.avatar ? (
-              <Image source={{ uri: account.avatar }} style={styles.avatarImage} />
+              <>
+                <Image
+                  source={{ uri: account.avatar }}
+                  style={styles.avatarImage}
+                  onLoad={onAvatarLoaded}
+                  onError={onAvatarLoaded}
+                />
+                {avatarLoading && (
+                  <View style={styles.avatarLoadingOverlay}>
+                    <ActivityIndicator
+                      size="small"
+                      color={colors.primaryForeground}
+                    />
+                  </View>
+                )}
+              </>
             ) : avatarLoading ? (
               <ActivityIndicator
                 size="small"
@@ -1291,6 +1330,16 @@ const styles = StyleSheet.create({
   avatarImage: {
     width: '100%',
     height: '100%',
+  },
+  avatarLoadingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 999,
   },
   avatarText: {
     fontFamily: 'Inter_700Bold',
